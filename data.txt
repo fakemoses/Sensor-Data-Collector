@@ -1,0 +1,3 @@
+Temperature: 30.00, Humidity: 81.90% 
+Temperature: 30.00, Humidity: 81.90% 
+Temperature: 30.00, Humidity: 81.90% 
