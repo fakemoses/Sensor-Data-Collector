@@ -1,13 +1,11 @@
-#include "udp_client.h"
-#include <string.h>
-#include <unistd.h>
+#include "UdpClient.h"
 
 namespace udp_client_server
 {
     /// @brief Constructor for UDP client. Credit to: https://linux.m2osw.com/c-implementation-udp-clientserver
     /// @param addr 
     /// @param port 
-    udp_client::udp_client(const std::string &addr, int port)
+    UdpClient::UdpClient(const std::string &addr, int port)
         : f_port(port), f_addr(addr)
     {
         char decimal_port[16];
@@ -31,7 +29,7 @@ namespace udp_client_server
         }
     }
 
-    udp_client::~udp_client()
+    UdpClient::~UdpClient()
     {
         freeaddrinfo(f_addrinfo);
         close(f_socket);
@@ -39,21 +37,21 @@ namespace udp_client_server
 
     /// @brief get socket 
     /// @return 
-    int udp_client::get_socket() const
+    int UdpClient::get_socket() const
     {
         return f_socket;
     }
 
     /// @brief get port value
     /// @return 
-    int udp_client::get_port() const
+    int UdpClient::get_port() const
     {
         return f_port;
     }
 
     /// @brief get client address
     /// @return 
-    std::string udp_client::get_addr() const
+    std::string UdpClient::get_addr() const
     {
         return f_addr;
     }
@@ -62,20 +60,40 @@ namespace udp_client_server
     /// @param msg 
     /// @param size 
     /// @return 
-    int udp_client::send(const char *msg, size_t size)
+    int UdpClient::send(const char *msg, size_t size)
     {
-        return sendto(f_socket, msg, size, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen);
+        int sent = sendto(f_socket, msg, size, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen);
+
+        if (sent == -1)
+        {
+            std::cerr << "Error occured while sending the request: " << errno << std::endl;
+            return -1;
+        }
+        
+        return sent; 
     }
 
     /// @brief Receive response from the server
     /// @param msg 
     /// @param size 
     /// @return 
-    int udp_client::receive(char *msg, size_t size)
+    int UdpClient::receive(char *msg, size_t size)
     {
-        return recvfrom(f_socket, msg, size,  
+        int response = recvfrom(f_socket, msg, size,  
                 MSG_WAITALL, f_addrinfo->ai_addr, 
                 &f_addrinfo->ai_addrlen);
+        
+        if (response == 0 )
+        {
+            std::cout << "no messages received" << std::endl;
+            return 0;
+        } else if (response == -1)
+        {
+            std::cerr << "Error occured: " << errno << std::endl;
+            return -1;
+        }
+        
+        return response;
     }
 
 }
